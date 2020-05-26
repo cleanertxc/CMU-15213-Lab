@@ -53,8 +53,8 @@ char linebuf[RIO_BUFSIZE];
 int fd_max = 0;
 
 /* Parameters */
-static const int default_err_limit = 5;
-static int err_limit = default_err_limit;
+//static const int default_err_limit = 5;
+static int err_limit = 5;
 static int err_cnt = 0;
 static int echo = 0;
 

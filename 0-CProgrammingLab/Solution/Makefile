@@ -1,4 +1,4 @@
-CC = /usr/local/depot/llvm-7.0/bin/clang
+CC = gcc
 CFLAGS = -O0 -g -Wall -Werror
 
 all: qtest
