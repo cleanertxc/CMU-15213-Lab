@@ -1,11 +1,11 @@
 /* 
  * CS:APP Data Lab 
  * 
- * <Please put your name and userid here>
+ * xichen tan xt24
  * 
  * bits.c - Source file with your solutions to the Lab.
  *          This is the file you will hand in to your instructor.
- *
+ * 
  * WARNING: Do not include the <stdio.h> header; it confuses the dlc
  * compiler. You can still use printf for debugging without including
  * <stdio.h>, although you might get a compiler warning. In general,
@@ -143,7 +143,11 @@ NOTES:
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  return 2;
+  int oneIfBothOne = x&y;
+  int zeroIfBothOne = ~oneIfBothOne;
+  int oneIfContainsOne = ~((~x)&(~y));
+  int result = zeroIfBothOne & oneIfContainsOne;
+  return result;
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -152,9 +156,8 @@ int bitXor(int x, int y) {
  *   Rating: 1
  */
 int tmin(void) {
-
-  return 2;
-
+  int result = 1 << 31;
+  return result;
 }
 //2
 /*
@@ -165,7 +168,8 @@ int tmin(void) {
  *   Rating: 1
  */
 int isTmax(int x) {
-  return 2;
+  int reverse = !!(~x);
+  return !(x+x+1+reverse);
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -176,7 +180,12 @@ int isTmax(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+  int slice = 170;
+  int origin = 170;
+  origin = (origin<<8)+slice;
+  origin = (origin<<8)+slice;
+  origin = (origin<<8)+slice;
+  return !(~(origin&x)+origin+1);
 }
 /* 
  * negate - return -x 
@@ -186,7 +195,7 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  return (~x)+1;
 }
 //3
 /* 
@@ -199,7 +208,8 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+  int diff = (x<<1)+(~105+1);
+  return !(x>>6|(~diff+10)>>31|(diff+9)>>31);
 }
 /* 
  * conditional - same as x ? y : z 
@@ -209,7 +219,7 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+  return ((~(!!x)+1)&y)|((~(~(!!x)+1))&z);
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -219,7 +229,17 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+  //check sign
+  int xSign = (x>>31)&1;
+  int ySign = (y>>31)&1;
+  int twoSign = xSign & !ySign;
+
+  int diff = x+(~y)+1;
+  int diffSign = (diff>>31)&1;
+  int sameSign = !(xSign ^ ySign);
+  int diffNonPositiveFlag = sameSign & (~(!!diff)|diffSign);
+  
+  return (diffNonPositiveFlag| twoSign);
 }
 //4
 /* 
@@ -231,7 +251,14 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return 2;
+  int smeard = x;
+  smeard = smeard | smeard >> 16;
+  smeard = smeard | smeard >> 8;
+  smeard = smeard | smeard >> 4;
+  smeard = smeard | smeard >> 2;
+  smeard = smeard | smeard >> 1;
+  
+  return (~smeard & 1);
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
@@ -246,7 +273,37 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  return 0;
+  int y, result, m16, m8, m4, m2, m1, bitnum;
+  m1 = 0x2;
+  m2 = 0xC;
+  m4 = 0xF0;
+  m8 = 0xFF << 8;
+  m16 = (m8|0xFF) << 16;
+
+  result = 1;
+  y = x^ (x>>31);
+  
+  bitnum = (!!(y&m16))<<4;
+  result += bitnum;
+  y = y>>bitnum;
+
+  bitnum = (!!(y&m8))<<3;
+  result += bitnum;
+  y = y>>bitnum;
+
+  bitnum = (!!(y&m4))<<2;
+  result += bitnum;
+  y = y>>bitnum;
+
+  bitnum = (!!(y&m2)) << 1;
+  result += bitnum;
+  y = y>>bitnum;
+
+  bitnum = !!(y&m1);
+  result += bitnum;
+  y = y>>bitnum;
+  
+  return result +(y&1);
 }
 //float
 /* 
@@ -261,7 +318,36 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-  return 2;
+  unsigned  expMask = 0xFF;
+  unsigned exp = expMask & (uf>>23);
+  unsigned Mtail = (uf<<9)>>9;
+
+  unsigned expAllZeroFlag = !exp;
+  unsigned expAllOneFlag = !(exp ^ expMask);
+  unsigned MtailAllZeroFlag = !(Mtail);
+
+  unsigned signBitExpMask = 0xff800000;
+  unsigned signBitMask = 0x80000000;
+
+  unsigned oneExp = 0x00800000;
+  if(expAllOneFlag){
+    return uf;
+  }else if(expAllZeroFlag){
+    if(MtailAllZeroFlag){
+      return uf;
+    }else{
+      unsigned onlyKeepSignBit = signBitMask &uf;
+      uf = onlyKeepSignBit | (uf<<1);
+    }
+  }else{
+    if(!((exp+1)^0xff)){
+      uf = uf + oneExp;
+      uf = uf & signBitExpMask;
+    }else{
+      uf = uf + oneExp;
+    }
+  }
+  return uf;
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
@@ -276,7 +362,53 @@ unsigned floatScale2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  return 2;
+  unsigned res, exp, frac, outOfRange, signBitMask, signBit, expMask, fracMask;
+  unsigned M, bias, temp, fractionalFirstBitMask;
+  int firstOneInFractionalIdx, E;
+  
+  if(!(uf<<1)){
+    return 0;
+  }
+  expMask = 0x7f800000;
+  exp = (expMask & uf)>>23;
+
+  fracMask = 0x008ffff;
+  frac = fracMask & uf;
+  
+  outOfRange = 0x80000000u;
+  bias = 0x7f;
+  if(exp==expMask){
+    res = outOfRange;
+  }else if(!exp){
+    return 0;
+  }else{
+    E = exp - bias;
+    if(E<0){
+      return 0;
+    }else if(E>30){
+      return outOfRange;
+    }
+    temp = uf;
+    firstOneInFractionalIdx = 22;
+    fractionalFirstBitMask = 0x00400000;
+    for(; (firstOneInFractionalIdx>=0)&& !(temp&fractionalFirstBitMask);){
+      firstOneInFractionalIdx -= 1;
+      temp = temp << 1;
+    }
+    M = 0x00800000 + frac;
+    if(E>23){
+      res = M << (E-23);
+    }else{
+      res = M >> (23-E);
+    }
+  }
+
+  signBitMask = 0x80000000;
+  signBit = signBitMask & uf;
+  if(signBit){
+    res = -res;
+  }
+  return res;
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
