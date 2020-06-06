@@ -424,5 +424,12 @@ int floatFloat2Int(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+  int exp = x+127;
+  if(exp<=0){
+    return 0;
+  }
+  if(exp>=0xFF){
+    return 0x7f800000;
+  }
+  return exp<<23;
 }
